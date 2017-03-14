@@ -47,18 +47,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-vision</artifactId>
-			<version>0.9.3-alpha</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.5</version>
-		</dependency>
-
 	</dependencies>
 
 

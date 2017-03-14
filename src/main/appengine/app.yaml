@@ -1,0 +1,8 @@
+runtime: custom
+env: flex
+env_variables:
+  'DBG_ENABLE': 'true'
+resources:
+  cpu: 8
+  memory_gb: 6.8
+
