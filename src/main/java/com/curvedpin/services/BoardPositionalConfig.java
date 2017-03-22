@@ -1,9 +1,24 @@
-package com.curvedpin;
+package com.curvedpin.services;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ben on 3/13/17.
  */
 class BoardPositionalConfig {
+
+    final static Map<String,BoardPositionalConfig> boardMap = new HashMap<>();
+    final static Map<String,BoardPositionalConfig> rackMap = new HashMap<>();
+
+    static {
+
+        //TODO: add the config for boards and racks for a given size of board.
+        //IPHONE6_BOARD(15, 15, (float) (15 / 3), (float) (15 / 3), 14, 344, 48, 48, 3, 14, 36, 30),
+        //        IPHONE6_RACK(1, 7, (float) (15 / 1), (float) (15 / 1), 3, 1094, 107, 0, 20, 25, 70, 70);
+    }
+
+
     private final int rows;
     private final int cols;
     private final float xFudge;
