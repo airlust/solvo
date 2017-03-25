@@ -1,6 +1,6 @@
 package com.curvedpin.solver;
 
-import com.curvedpin.solver.gaddag.State;
+import com.curvedpin.solver.gaddag.GADDAG;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +17,9 @@ public class WordBoard {
     //Refactor this later if we need to support different sized boards.
     final static int ROWS = 15;
     final static int COLS = 15;
+
+    private final static String BONUS_TILES= "3=TW, 6=TL, 8=TL, 11=TW, 17=DL, 20=DW, 24=DW, 27=DL, 31=DL, 34=DL, 40=DL, 43=DL, 45=TW, 48=TL, 52=DW, 56=TL, 59=TW, 62=DL, 66=DL, 68=DL, 72=DL, 76=DW, 80=TL, 84=TL, 88=DW, 90=TL, 94=DL, 100=DL, 104=TL, 108=DW, 116=DW, 120=TL, 124=DL, 130=DL, 134=TL, 136=DW, 140=TL, 144=TL, 148=DW, 152=DL, 156=DL, 158=DL, 162=DL, 165=TW, 168=TL, 172=DW, 176=TL, 179=TW, 181=DL, 184=DL, 190=DL, 193=DL, 197=DL, 200=DW, 204=DW, 207=DL, 213=TW, 216=TL, 218=TL, 221=TW";
+    public final static Map<String,Integer> LETTER_VALUES = new HashMap<>();
 
     //TODO: consider changing this to two lists, rows & cells (obviously with repeated TileCells across them).
     private final Map<Integer,TileCell> theBoard = new HashMap<>();
@@ -48,6 +51,42 @@ public class WordBoard {
             int right = pos + 1;
             if(pos % ROWS != 0) currentCell.setRightCell(theBoard.get(right));
         }
+
+        for(String bounsDef: BONUS_TILES.split(",")) {
+            //FIXME this is lazy, inefficient, fragile etc.. Although, it does just kind of work.
+            int tilePos = Integer.parseInt(bounsDef.split("=")[0].trim());
+            TileCell.TileBonus bonusType = TileCell.TileBonus.valueOf(bounsDef.split("=")[1]);
+            theBoard.get(tilePos).setBonus(bonusType);
+        }
+
+        //Oh Java - you suck.
+        LETTER_VALUES.put("a",1);
+        LETTER_VALUES.put("b",4);
+        LETTER_VALUES.put("c",4);
+        LETTER_VALUES.put("d",2);
+        LETTER_VALUES.put("e",1);
+        LETTER_VALUES.put("f",4);
+        LETTER_VALUES.put("g",3);
+        LETTER_VALUES.put("h",3);
+        LETTER_VALUES.put("i",1);
+        LETTER_VALUES.put("j",10);
+        LETTER_VALUES.put("k",5);
+        LETTER_VALUES.put("l",2);
+        LETTER_VALUES.put("m",4);
+        LETTER_VALUES.put("n",2);
+        LETTER_VALUES.put("o",1);
+        LETTER_VALUES.put("p",4);
+        LETTER_VALUES.put("q",10);
+        LETTER_VALUES.put("r",1);
+        LETTER_VALUES.put("s",1);
+        LETTER_VALUES.put("t",1);
+        LETTER_VALUES.put("u",2);
+        LETTER_VALUES.put("v",5);
+        LETTER_VALUES.put("w",4);
+        LETTER_VALUES.put("x",8);
+        LETTER_VALUES.put("y",3);
+        LETTER_VALUES.put("z",10);
+        LETTER_VALUES.put(" ",0);
     }
 
     /**
@@ -101,7 +140,7 @@ public class WordBoard {
         return retVal;
     }
 
-    public List<Move> generateCrossSets(Collection<TileCell> anchorCells,State initialState) {
+    public List<Move> generateCrossSets(Collection<TileCell> anchorCells,GADDAG.State initialState) {
         //for each anchor, generate the cross sets
 
         //FIXME Reset all the crossSets for now
@@ -135,13 +174,13 @@ public class WordBoard {
         return retVal;
     }
 
-    public List<Move> initiateWordSearch(Collection<TileCell> anchorCells, String rackLetters, State initialState) {
+    public List<Move> initiateWordSearch(Collection<TileCell> anchorCells, String rackLetters, GADDAG.State initialState) {
         generateCrossSets(anchorCells,initialState);
         return _initiateWordSearch(anchorCells,rackLetters,initialState, true);
     }
 
         //FIXME this uses the anchor squares to traverse the board. This is fine, but means you're searching the board the anchor squares came from, not this board instance.
-    public List<Move> _initiateWordSearch(Collection<TileCell> anchorCells, String rackLetters, State initialState, boolean crossSetFiltering) {
+    public List<Move> _initiateWordSearch(Collection<TileCell> anchorCells, String rackLetters, GADDAG.State initialState, boolean crossSetFiltering) {
 
         rackLetters = rackLetters.toLowerCase();
         List<Move> candidateMoves = new ArrayList<>();
@@ -169,18 +208,18 @@ public class WordBoard {
         return candidateMoves;
     }
 
-    public void findWordForAnchor(TileCell anchor, TileCell currentCell, State state, String rackLetters, List<Move.MoveElement> currentMoves, Direction direction, List<Move> candidateMoves, boolean crossSetFiltering) {
+    public void findWordForAnchor(TileCell anchor, TileCell currentCell, GADDAG.State state, String rackLetters, List<Move.MoveElement> currentMoves, Direction direction, List<Move> candidateMoves, boolean crossSetFiltering) {
 
         if (currentCell == null) {
             return;
         } else if (state == null) {
             //We have a word.
             String originalMatch = currentMoves.stream().map(moveElement -> moveElement.letter).collect(Collectors.joining());
-            List<Move.MoveElement> sortedMoves = reconstituteWord(currentMoves);
+            List<Move.MoveElement> sortedMoves = orderMoves(currentMoves);
             String word = sortedMoves.stream().map(moveElement -> moveElement.letter).collect(Collectors.joining());
 
 
-            int breakOffset = originalMatch.indexOf(State.BREAK) - 1;
+            int breakOffset = originalMatch.indexOf(GADDAG.State.BREAK) - 1;
 
             TileCell startTile = anchor;
             if(direction == Direction.RIGHT) {
@@ -199,7 +238,7 @@ public class WordBoard {
         } else if(currentCell.isEmpty()) {
             //For each letter left on the rack to which we can navigate (from this state)
             //Remote the letter from the rack (and place it on the board)
-            state.getChildren().keySet().stream().filter(s ->  rackLetters.contains(s) || s.equals(State.EOW) || s.equals(State.BREAK)).filter(s -> {
+            state.getChildren().keySet().stream().filter(s ->  rackLetters.contains(s) || s.equals(GADDAG.State.EOW) || s.equals(GADDAG.State.BREAK)).filter(s -> {
                 if(crossSetFiltering) {
                     if (direction.equals(Direction.UP) || direction.equals(Direction.DOWN)) {
                         return currentCell.checkAcrossCrossSet(s);
@@ -211,12 +250,12 @@ public class WordBoard {
             }).forEach(s -> {
 
                 //Remove letter from rack if it's not a BREAK or EOW
-                String newRackLetters = (s.equals(State.BREAK) || s.equals(State.EOW)) ? rackLetters :  rackLetters.replaceFirst(s,"");
+                String newRackLetters = (s.equals(GADDAG.State.BREAK) || s.equals(GADDAG.State.EOW)) ? rackLetters :  rackLetters.replaceFirst(s,"");
 
                 Direction newDirection = direction;
                 TileCell newCell = currentCell;
 
-                if(s.equals(State.BREAK)) {
+                if(s.equals(GADDAG.State.BREAK)) {
                     //we need to swtich direction:
                     newCell = anchor;
                     switch (direction) {
@@ -242,7 +281,7 @@ public class WordBoard {
                 if(currentMoves != null) {newMoves.addAll(currentMoves);}
                 //pop the current letter into our letters holder (if we're not the root state)
                 //if(state.getLetter() != State.ROOT) { newMoves.add(new Move.MoveElement(state.getLetter(),currentCell)); };
-                if(!s.equals(State.EOW)) { newMoves.add(new Move.MoveElement(s,currentCell));}
+                if(!s.equals(GADDAG.State.EOW)) { newMoves.add(new Move.MoveElement(s,currentCell,true));}
 
                 //recurse, also getting the new state (from the current state).
                 findWordForAnchor(anchor,newCell,state.getChildState(s),newRackLetters, newMoves,newDirection,candidateMoves,crossSetFiltering);
@@ -250,18 +289,18 @@ public class WordBoard {
 
         } else {
             // current cell isn't empty, must be something on the board already - can we navigate to it from our current state?
-            State nextState = state.getChildState(currentCell.getLetter());
+            GADDAG.State nextState = state.getChildState(currentCell.getLetter());
             if(nextState != null) {
                 List<Move.MoveElement> newMoves = new ArrayList<>();
                 if(currentMoves != null) {newMoves.addAll(currentMoves);}
-                newMoves.add(new Move.MoveElement(currentCell.getLetter(),currentCell));
+                newMoves.add(new Move.MoveElement(currentCell.getLetter(),currentCell, false));
                 findWordForAnchor(anchor,currentCell.getCellForDirection(direction),state.getChildState(currentCell.getLetter()),rackLetters,newMoves,direction,candidateMoves,crossSetFiltering);
             }
         }
     }
 
     //FIXME rename this method.
-    private List<Move.MoveElement> reconstituteWord(List<Move.MoveElement> moves) {
+    private List<Move.MoveElement> orderMoves(List<Move.MoveElement> moves) {
 
         List<Move.MoveElement> orderedMoves = new ArrayList<Move.MoveElement>();
 
@@ -270,12 +309,11 @@ public class WordBoard {
             letters.append(m.letter);
         }
 
-
-        for(int i = letters.indexOf(State.BREAK) - 1; i >= 0; i-- ) {
+        for(int i = letters.indexOf(GADDAG.State.BREAK) - 1; i >= 0; i-- ) {
             //sb.append(letters.charAt(i));
             orderedMoves.add(moves.get(i));
         }
-        for(int i = letters.indexOf(State.BREAK) + 1; i < letters.length(); i++) {
+        for(int i = letters.indexOf(GADDAG.State.BREAK) + 1; i < letters.length(); i++) {
             orderedMoves.add(moves.get(i));
         }
         return orderedMoves;

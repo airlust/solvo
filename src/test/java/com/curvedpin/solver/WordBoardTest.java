@@ -1,6 +1,6 @@
 package com.curvedpin.solver;
 
-import com.curvedpin.solver.gaddag.GADDAGLoader;
+import com.curvedpin.solver.gaddag.GADDAG;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -14,7 +14,7 @@ import java.util.*;
 public class WordBoardTest {
 
 
-    static GADDAGLoader gaddagLoader;
+    static GADDAG gaddagLoader;
 
     //TODO parameterize this test class.
 
@@ -28,7 +28,7 @@ public class WordBoardTest {
 
     @BeforeClass
     public static void setupShared() {
-        gaddagLoader = new GADDAGLoader();
+        gaddagLoader = new GADDAG();
     }
 
     @Before
@@ -180,7 +180,7 @@ public class WordBoardTest {
     @Test
     public void testComplexBoardSingleWordDictionary() {
 
-        GADDAGLoader filteredGADDAG = new GADDAGLoader(s -> s.equals("ear"));
+        GADDAG filteredGADDAG = new GADDAG(s -> s.equals("ear"));
         Map<Integer, TileCell> anchorSquares = anOtherBoard.getAnchorSquares();
         anOtherBoard.generateCrossSets(anchorSquares.values(), gaddagLoader.getRootState());
         List<Move> moves = anOtherBoard._initiateWordSearch(anchorSquares.values(), "IXREWAJ", filteredGADDAG.getRootState(),true);
@@ -194,9 +194,10 @@ public class WordBoardTest {
 
         Map<Integer, TileCell> anchorSquares = anOtherBoard.getAnchorSquares();
         List<Move> moves = anOtherBoard.initiateWordSearch(anchorSquares.values(), "IXREWAJ", gaddagLoader.getRootState());
-        for(Move m: moves) {
+
+        moves.sort(Comparator.comparingInt(Move::getScore).reversed());
+        for(Move m: moves)
             System.out.println(m);
-        }
         System.out.println("Number of possible moves: " + moves.size());
     }
 

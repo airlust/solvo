@@ -1,6 +1,6 @@
 package com.curvedpin.solver;
 
-import com.curvedpin.solver.gaddag.State;
+import com.curvedpin.solver.gaddag.GADDAG;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,8 +10,31 @@ import java.util.TreeSet;
  */
 public class TileCell {
 
+
+    public boolean hasBonus() {
+        return bonus != null;
+    }
+
+    public enum TileBonus {
+        TL(false,3),TW(true,3),DL(false,2),DW(true,2);
+
+        private final int multiplier;
+        private boolean wordBonus;
+        TileBonus(boolean wordBonus,int multiplier) {
+            this.wordBonus = wordBonus;
+            this.multiplier = multiplier;
+        }
+        public boolean isWordBonus() {
+            return wordBonus;
+        }
+        public int getMultiplier() {
+            return multiplier;
+        }
+    }
+
     private final int pos;
 
+    private TileBonus bonus;
     private String tileLetter = null;
     private TileCell upCell;
     private TileCell downCell;
@@ -30,6 +53,14 @@ public class TileCell {
     public TileCell(int pos) {
         tileLetter = "";
         this.pos = pos;
+    }
+
+    public void setBonus(TileBonus tb) {
+        this.bonus = tb;
+    }
+
+    public TileBonus getBonus() {
+        return bonus;
     }
 
     public String getLetter() {
@@ -128,10 +159,11 @@ public class TileCell {
     }
 
     public boolean checkDownCrossSet(String s) {
-        return !(hasUpFilled() || hasDownFilled()) || downCrossSet.contains(s) || s.equals(State.BREAK) || s.equals(State.EOW);
+        return !(hasUpFilled() || hasDownFilled()) || downCrossSet.contains(s) || s.equals(GADDAG.State.BREAK) || s.equals(GADDAG.State.EOW);
     }
 
     public boolean checkAcrossCrossSet(String s) {
-        return !(hasRightFilled() || hasLeftFilled()) || acrossCrossSet.contains(s) || s.equals(State.BREAK) || s.equals(State.EOW);
+        return !(hasRightFilled() || hasLeftFilled()) || acrossCrossSet.contains(s) || s.equals(GADDAG.State.BREAK) || s.equals(GADDAG.State.EOW);
     }
+
 }

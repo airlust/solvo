@@ -56,6 +56,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>appengine-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<configuration>
+					<project>solvoservices</project>
+					<version>release</version>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

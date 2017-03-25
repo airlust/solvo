@@ -1,9 +1,13 @@
 package com.curvedpin.services;
 
+import com.curvedpin.solver.Move;
+import com.curvedpin.solver.WordBoard;
+import com.curvedpin.solver.gaddag.GADDAG;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,18 +17,20 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 
 @RestController
 public class SolvoServicesController {
 
     private final BoardPositionalConfig boardConfig = new BoardPositionalConfig(15, 15, (float) (15 / 3), (float) (15 / 3), 14, 344, 48, 48, 3, 14, 36, 30);
     private final BoardPositionalConfig rackConfig = new BoardPositionalConfig(1, 7, (float) (15 / 1), (float) (15 / 1), 3, 1094, 107, 0, 12, 25, 78, 70);
+    private final GADDAG wordGraph = new GADDAG();
 
 
     @PostMapping(value = "/chopshop/board", produces = "application/json")
@@ -45,6 +51,24 @@ public class SolvoServicesController {
         Map<Integer, String> boardLetters = getBoardLetters(bf);
         Map<Integer, String> rackLetters = getRackLetters(bf);
         return new ArrayList<>(Arrays.asList(boardLetters,rackLetters));
+    }
+
+    @PostMapping(value = "/wordshop", produces = "text/plain")
+    public String getBestMoves(@RequestParam("file") MultipartFile file) throws IOException {
+        StringBuffer result = new StringBuffer();
+        BufferedImage bf = ImageIO.read(file.getInputStream());
+        Map<Integer, String> boardLetters = getBoardLetters(bf);
+        Map<Integer, String> rackLetters = getRackLetters(bf);
+
+        WordBoard wordBoard = new WordBoard(boardLetters);
+        List<Move> moves = wordBoard.initiateWordSearch(wordBoard.getAnchorSquares().values(), rackLetters.values().stream().collect(Collectors.joining()), wordGraph.getRootState());
+        moves.sort(Comparator.comparingInt(Move::getScore).reversed());
+        for(Move m: moves) {
+            System.out.println(m);
+            result.append(m.toString());
+            result.append("\n");
+        }
+        return result.toString();
     }
 
     public Map<Integer,String> getBoardLetters(BufferedImage bf) {
@@ -70,7 +94,7 @@ public class SolvoServicesController {
     public Map<Integer,String> getTileLetters(Map<Integer,BufferedImage> tileImages) {
 
         ArrayList<CompletableFuture<String>> futures = new ArrayList<>();
-        Map<Integer, String> collector = new HashMap<>();
+        Map<Integer, String> collector = new TreeMap<>();
 
         for(Map.Entry<Integer,BufferedImage> entry: tileImages.entrySet()) {
 
@@ -86,7 +110,8 @@ public class SolvoServicesController {
                     if(new File("/usr/local/share/tessdata").exists()) tess.setDatapath("/usr/local/share/");
                     if(new File("/usr/share/tesseract/tessdata").exists()) tess.setDatapath("/usr/share/tesseract/");
                     s = tess.doOCR(bf).trim().toUpperCase();
-                    if(s.length() > 1 || s.isEmpty()) {
+                    //TODO this could be more efficient of a regex.
+                    if(s.length() > 1 || s.isEmpty() || s.matches("[^a-zA-Z]")) {
                         System.out.println(String.format("Ignoring cell %d, content %s", cellNumber, s, Thread.currentThread().getName()));
                     } else {
                         System.out.println(String.format("cell %d, content %s", cellNumber, s, Thread.currentThread().getName()));

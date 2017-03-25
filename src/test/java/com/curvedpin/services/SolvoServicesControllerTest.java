@@ -41,23 +41,6 @@ public class SolvoServicesControllerTest {
                 " , ,R,O,M,P, ,S,H,A,V,E,R, ,T," +
                 " ,F,E,W,E,S,T, ,M,E, ,Y, , , ";
 
-//        String boardAValues = ",,,TW,O,O,Z,E,S,,,V,,,," +
-//                "G,U,T,T,E,D,,T,R,O,P,I,C,,," +
-//                "A,DL,,,DL,,,,I,,DL,N,,DL,," +
-//                "G,,,TL,,,,DW,,,N,E,,,TW," +
-//                "E,,DL,,,,DL,,DL,H,I,S,DL,,," +
-//                "R,DW,,,,TL,,,,I,D,,,DW,," +
-//                "TL,,,W,O,,,,,J,A,B,S,,TL," +
-//                ",,,H,,,,A,N,A,L,DW,U,,O," +
-//                "TL,,,I,DL,,,C,A,B,DL,,L,O,X," +
-//                ",Q,,R,O,T,T,E,N,TL,,,K,DW,I," +
-//                ",U,DL,R,,U,DL,D,DL,,,,DL,,D," +
-//                "L,E,G,S,,L,,I,D,E,A,T,E,,A," +
-//                ",Y,,,DL,I,,A,,,DL,H,,DL,N," +
-//                ",,R,O,M,P,,S,H,A,V,E,R,,T," +
-//                ",F,E,W,E,S,T,,M,E,,Y,,,";
-
-
 
         int i = 0;
         //String[] split = Arrays.stream(boardAValues.split(",")).filter(s -> i++>0).filter(s -> !s.isEmpty()).map();
@@ -104,7 +87,18 @@ public class SolvoServicesControllerTest {
 
         SolvoServicesController ssc = new SolvoServicesController();
         Map<Integer, String> boardLetters = ssc.getBoardLetters(bf);
-        Assert.assertEquals(expectedBoardA, boardLetters);
+
+    }
+
+    @Test
+    public void getBlankBoard() throws IOException {
+        BufferedImage bf = ImageIO.read(ClassLoader.getSystemResourceAsStream("SampleBoardE.png"));
+
+        SolvoServicesController ssc = new SolvoServicesController();
+        Map<Integer, String> boardLetters = ssc.getBoardLetters(bf);
+        System.out.println(boardLetters);
+        Assert.assertEquals(new HashMap<>(), boardLetters);
+
     }
 
     @Test
