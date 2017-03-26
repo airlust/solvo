@@ -23,7 +23,8 @@ public class GADDAG {
 
     public GADDAG(Predicate<String> wordFilter) {
 
-        Reader r = new InputStreamReader(ClassLoader.getSystemResourceAsStream("enable1.txt"), StandardCharsets.UTF_8);
+//        Reader r = new InputStreamReader(ClassLoader.getSystemResourceAsStream("enable1.txt"), StandardCharsets.UTF_8);
+        Reader r = new InputStreamReader(getClass().getResourceAsStream("/enable1.txt"), StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(r);
 
         bufferedReader.lines().filter(wordFilter).forEach(word -> {
