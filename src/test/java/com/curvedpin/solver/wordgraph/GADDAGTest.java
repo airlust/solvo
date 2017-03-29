@@ -1,15 +1,15 @@
-package com.curvedpin.solver.gaddag;
+package com.curvedpin.solver.wordgraph;
 
 /**
  * Created by ben on 3/17/17.
  */
 public class GADDAGTest {
 
-    GADDAG myGADDAG = new GADDAG();
+    WordGraph myGADDAG = new WordGraph();
 
 //    @Test
 //    public void gaddagLoader() {
-//        new GADDAG();
+//        new WordGraph();
 //    }
 
 }

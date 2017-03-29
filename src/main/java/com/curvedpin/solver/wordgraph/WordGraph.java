@@ -1,4 +1,4 @@
-package com.curvedpin.solver.gaddag;
+package com.curvedpin.solver.wordgraph;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,23 +13,22 @@ import java.util.function.Predicate;
 /**
  * Created by ben on 3/17/17.
  */
-public class GADDAG {
+public class WordGraph {
 
-    State initialState = new State(State.ROOT);
+    Node initialNode = new Node(Node.ROOT);
 
-    public GADDAG() {
+    public WordGraph() {
         this(s -> true);
     }
 
-    public GADDAG(Predicate<String> wordFilter) {
+    public WordGraph(Predicate<String> wordFilter) {
 
-//        Reader r = new InputStreamReader(ClassLoader.getSystemResourceAsStream("enable1.txt"), StandardCharsets.UTF_8);
         Reader r = new InputStreamReader(getClass().getResourceAsStream("/enable1.txt"), StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(r);
 
         bufferedReader.lines().filter(wordFilter).forEach(word -> {
 
-            List<State> prevState = new ArrayList<>();
+            List<Node> prevNode = new ArrayList<>();
             for(int i = 1 ; i <= word.length(); i++) {
 
                 String prefix = word.substring(0,i);
@@ -37,26 +36,26 @@ public class GADDAG {
 
                 if(i != word.length()) suffix = word.substring(i, word.length());
 
-                String addWord = new StringBuffer(prefix).reverse().toString() + State.BREAK + suffix + State.EOW;
+                String addWord = new StringBuffer(prefix).reverse().toString() + Node.BREAK + suffix + Node.EOW;
 
-                State currentState = initialState;
+                Node currentNode = initialNode;
                 boolean breakFound = false;
                 int j = 0;
 
                 for (String ch : addWord.split("")) {
 
-                    if (breakFound && prevState.size() > j) {
-                        currentState.addChild(ch, prevState.get(j));
+                    if (breakFound && prevNode.size() > j) {
+                        currentNode.addChild(ch, prevNode.get(j));
                         break;
                     }
 
-                    currentState = currentState.addChild(ch);
+                    currentNode = currentNode.addChild(ch);
 
-                    if (prevState.size() == j) {
-                        prevState.add(currentState);
+                    if (prevNode.size() == j) {
+                        prevNode.add(currentNode);
                     }
 
-                    if (ch.equals(State.BREAK)) {
+                    if (ch.equals(Node.BREAK)) {
                         breakFound = true;
                     }
                     j++;
@@ -64,21 +63,18 @@ public class GADDAG {
             }
         });
     }
-    public State getRootState() {
-        return initialState;
+    public Node getRootNode() {
+        return initialNode;
     }
 
-    /**
-     * Created by ben on 3/17/17.
-     */
-    public static class State {
+    public static class Node {
         public static final String BREAK = "^";
         public static final String EOW = "$";
         public static final String ROOT = " ";
         private final String letter;
-        Map<String, State> children = new HashMap<>();
+        Map<String, Node> children = new HashMap<>();
 
-        public State(String ch) {
+        public Node(String ch) {
             this.letter = ch;
         }
 
@@ -90,46 +86,38 @@ public class GADDAG {
          * @param ch
          * @return
          */
-        public State addChild(String ch) {
+        public Node addChild(String ch) {
 
-            State retVal = null;
+            Node retVal;
             if(children.keySet().contains(ch)) {
                 retVal = children.get(ch);
             } else {
-                retVal = ch.equals(EOW) ? null : new State(ch);
+                retVal = ch.equals(EOW) ? null : new Node(ch);
                 children.put(ch, retVal);
             }
             return retVal;
         }
 
-        public State addChild(String ch, State state) {
+        public Node addChild(String ch, Node node) {
             if(children.keySet().contains(ch)) {
-                state = children.get(ch);
+                node = children.get(ch);
             } else {
-                children.put(ch, state);
+                children.put(ch, node);
             }
-            return state;
+            return node;
         }
 
-        public String getLetter() {
-            return letter;
-        }
-
-        public boolean containsChild(String ch) {
-            return children.containsKey(ch);
-        }
-
-        public State getChildState(String ch) {
+        public Node getChildNode(String ch) {
             return children.get(ch);
         }
 
-        public Map<String, State> getChildren() {
+        public Map<String, Node> getChildren() {
             return children;
         }
 
         @Override
         public String toString() {
-            return String.format("State{%s -> %s}", letter, children.keySet());
+            return String.format("Node{%s -> %s}", letter, children.keySet());
         }
     }
 }

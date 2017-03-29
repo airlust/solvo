@@ -1,6 +1,7 @@
 package com.curvedpin.services;
 
-import com.curvedpin.services.SolvoServicesController;
+import com.curvedpin.solver.image.BoardImageUtils;
+import com.curvedpin.solver.image.OCR;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,9 +76,9 @@ public class SolvoServicesControllerTest {
         BufferedImage bf = ImageIO.read(ClassLoader.getSystemResourceAsStream("SampleBoardD.png"));
 
         SolvoServicesController ssc = new SolvoServicesController();
-        Map<Integer, BufferedImage> rackImages = ssc.getRackTileImages(bf);
+        Map<Integer, BufferedImage> rackImages = BoardImageUtils.getRackTileImages(bf);
         System.out.println(rackImages);
-        Map<Integer, String> tileLetters = ssc.getTileLetters(rackImages);
+        Map<Integer, String> tileLetters = OCR.getTileLetters(rackImages);
         System.out.println(tileLetters);
     }
 
@@ -86,7 +87,17 @@ public class SolvoServicesControllerTest {
         BufferedImage bf = ImageIO.read(ClassLoader.getSystemResourceAsStream("SampleBoardA.png"));
 
         SolvoServicesController ssc = new SolvoServicesController();
-        Map<Integer, String> boardLetters = ssc.getBoardLetters(bf);
+        Map<Integer, String> boardLetters = BoardImageUtils.getBoardLetters(bf);
+
+    }
+
+    @Test
+    public void testWhiteOOnBonus() throws IOException {
+        BufferedImage bf = ImageIO.read(ClassLoader.getSystemResourceAsStream("SampleBoardF.png"));
+
+        SolvoServicesController ssc = new SolvoServicesController();
+        Map<Integer, String> boardLetters = BoardImageUtils.getBoardLetters(bf);
+        Assert.assertEquals("O",boardLetters.get(8));
 
     }
 
@@ -95,7 +106,7 @@ public class SolvoServicesControllerTest {
         BufferedImage bf = ImageIO.read(ClassLoader.getSystemResourceAsStream("SampleBoardE.png"));
 
         SolvoServicesController ssc = new SolvoServicesController();
-        Map<Integer, String> boardLetters = ssc.getBoardLetters(bf);
+        Map<Integer, String> boardLetters = BoardImageUtils.getBoardLetters(bf);
         System.out.println(boardLetters);
         Assert.assertEquals(new HashMap<>(), boardLetters);
 
@@ -105,7 +116,7 @@ public class SolvoServicesControllerTest {
     public void getRackLetters() throws IOException {
         BufferedImage bf = ImageIO.read(ClassLoader.getSystemResourceAsStream("SampleBoardC.png"));
         SolvoServicesController ssc = new SolvoServicesController();
-        Map<Integer, String> rackLetters = ssc.getRackLetters(bf);
+        Map<Integer, String> rackLetters = BoardImageUtils.getRackLetters(bf);
         Assert.assertEquals(expectedRackC, rackLetters);
     }
 }

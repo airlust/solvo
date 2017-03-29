@@ -1,18 +1,20 @@
 package com.curvedpin.solver;
 
-import com.curvedpin.solver.gaddag.GADDAG;
+import com.curvedpin.solver.wordgraph.WordGraph;
 
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Created by ben on 3/15/17.
- */
+
 public class TileCell {
 
 
     public boolean hasBonus() {
         return bonus != null;
+    }
+
+    public void setCenterTile(boolean centerTile) {
+        isCenterTile = centerTile;
     }
 
     public enum TileBonus {
@@ -35,14 +37,15 @@ public class TileCell {
     private final int pos;
 
     private TileBonus bonus;
+    private boolean isCenterTile;
     private String tileLetter = null;
     private TileCell upCell;
     private TileCell downCell;
     private TileCell leftCell;
     private TileCell rightCell;
 
-    private Set<String> acrossCrossSet = new TreeSet<>();
-    private Set<String> downCrossSet = new TreeSet<>();
+    private Map<String,Integer> acrossCrossSet = new HashMap<>();
+    private Map<String,Integer> downCrossSet = new HashMap<>();
 
 
     public TileCell(int pos, String tileLetter) {
@@ -110,7 +113,11 @@ public class TileCell {
     public boolean isAnchorTile() {
         //Would be nice here if we could use the .? syntax of groovy or swift
         //upCell?.isEmpty() etc..
-        return tileLetter.isEmpty() && ((upCell != null && !upCell.isEmpty()) || (downCell != null && !downCell.isEmpty()) || (leftCell != null && !leftCell.isEmpty()) || (rightCell != null && !rightCell.isEmpty())) ;
+        if(tileLetter.isEmpty() && isCenterTile) {
+            return true;
+        } else {
+            return tileLetter.isEmpty() && ((upCell != null && !upCell.isEmpty()) || (downCell != null && !downCell.isEmpty()) || (leftCell != null && !leftCell.isEmpty()) || (rightCell != null && !rightCell.isEmpty()));
+        }
     }
 
     @Override
@@ -131,7 +138,7 @@ public class TileCell {
         return result;
     }
 
-    public TileCell getCellForDirection(WordBoard.Direction direction) {
+    public TileCell getCellForDirection(WWFClassicBoard.Direction direction) {
 
         switch (direction) {
             case LEFT:
@@ -146,24 +153,34 @@ public class TileCell {
         return null;
     }
 
-    public void addAccrossCrossSet(String letter) {
-        acrossCrossSet.add(letter);
+    public void addAccrossCrossSet(String letter,int wordScore ) {
+        acrossCrossSet.put(letter,wordScore);
     }
 
-    public void addDownCrosSet(String letter) {
-        downCrossSet.add(letter);
+    public int getAcrossCrossScore(String letter) {
+        return acrossCrossSet.get(letter);
+    }
+
+
+    public void addDownCrossSet(String letter, int wordScore ) {
+        downCrossSet.put(letter,wordScore);
+    }
+
+    public int getDownCrossScore(String letter) {
+        return downCrossSet.get(letter);
     }
 
     public void resetCrossSets() {
-        acrossCrossSet = new TreeSet<>();
+        acrossCrossSet = new HashMap<>();
+        downCrossSet = new HashMap<>();
     }
 
     public boolean checkDownCrossSet(String s) {
-        return !(hasUpFilled() || hasDownFilled()) || downCrossSet.contains(s) || s.equals(GADDAG.State.BREAK) || s.equals(GADDAG.State.EOW);
+        return !(hasUpFilled() || hasDownFilled()) || downCrossSet.keySet().contains(s) || s.equals(WordGraph.Node.BREAK) || s.equals(WordGraph.Node.EOW);
     }
 
     public boolean checkAcrossCrossSet(String s) {
-        return !(hasRightFilled() || hasLeftFilled()) || acrossCrossSet.contains(s) || s.equals(GADDAG.State.BREAK) || s.equals(GADDAG.State.EOW);
+        return !(hasRightFilled() || hasLeftFilled()) || acrossCrossSet.keySet().contains(s) || s.equals(WordGraph.Node.BREAK) || s.equals(WordGraph.Node.EOW);
     }
 
 }
