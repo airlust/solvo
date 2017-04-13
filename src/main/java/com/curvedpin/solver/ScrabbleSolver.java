@@ -6,18 +6,17 @@ import com.curvedpin.solver.wordgraph.WordGraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ScrabbleSolver {
 
-    public static List<Move> generateCrossSets(Collection<TileCell> anchorCells, WordGraph.Node initialNode) {
+    static List<Move> generateCrossSets(Collection<TileCell> anchorCells, WordGraph.Node initialNode) {
         //FIXME reset the crosssets; not needed right now as we're generating a new board every time.
         List<Move> retVal = new ArrayList<>();
         String letters = "abcdefghijklmnopqrst";
 
         for(String singleLetterRack: letters.split("")) {
 
-            List<Move> moves = _initiateWordSearch(anchorCells, singleLetterRack, initialNode, false);
+            List<Move> moves = _wordSearch(anchorCells, singleLetterRack, initialNode, false);
             for(Move m: moves) {
                 for (Move.MoveElement e : m.getMoveElements()) {
 
@@ -38,13 +37,12 @@ public class ScrabbleSolver {
         return retVal;
     }
 
-    public static List<Move> initiateWordSearch(Collection<TileCell> anchorCells, String rackLetters, WordGraph.Node initialNode) {
+    public static List<Move> wordSearch(Collection<TileCell> anchorCells, String rackLetters, WordGraph.Node initialNode) {
         generateCrossSets(anchorCells, initialNode);
-        return _initiateWordSearch(anchorCells,rackLetters, initialNode, true);
+        return _wordSearch(anchorCells,rackLetters, initialNode, true);
     }
 
-    //FIXME this uses the anchor squares to traverse the board. This is fine, but means you're searching the board the anchor squares came from, not this board instance.
-    static List<Move> _initiateWordSearch(Collection<TileCell> anchorCells, String rackLetters, WordGraph.Node initialNode, boolean crossSetFiltering) {
+    static List<Move> _wordSearch(Collection<TileCell> anchorCells, String rackLetters, WordGraph.Node initialNode, boolean crossSetFiltering) {
 
         rackLetters = rackLetters.toLowerCase();
         List<Move> candidateMoves = new ArrayList<>();
@@ -72,7 +70,7 @@ public class ScrabbleSolver {
         return candidateMoves;
     }
 
-    public static void findWordForAnchor(TileCell anchor, TileCell currentCell, WordGraph.Node node, String rackLetters, List<Move.MoveElement> currentMoves, WWFClassicBoard.Direction direction, List<Move> candidateMoves, boolean crossSetFiltering) {
+    static void findWordForAnchor(TileCell anchor, TileCell currentCell, WordGraph.Node node, String rackLetters, List<Move.MoveElement> currentMoves, WWFClassicBoard.Direction direction, List<Move> candidateMoves, boolean crossSetFiltering) {
 
         if (currentCell == null) {
             //We're off the board; could short circuit this before recursing into this function.

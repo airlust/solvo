@@ -3,6 +3,7 @@ package com.curvedpin.solver.wordgraph;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,7 +88,6 @@ public class WordGraph {
          * @return
          */
         public Node addChild(String ch) {
-
             Node retVal;
             if(children.keySet().contains(ch)) {
                 retVal = children.get(ch);
