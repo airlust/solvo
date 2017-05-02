@@ -9,14 +9,18 @@ import java.util.List;
 
 public class ScrabbleSolver {
 
-    static List<Move> generateCrossSets(Collection<TileCell> anchorCells, WordGraph.Node initialNode) {
-        //FIXME reset the crosssets; not needed right now as we're generating a new board every time.
+    static List<Move> generateCrossSets(WWFClassicBoard board, WordGraph.Node initialNode) {
+
+        //FIXME: We don't need to reset all the crosssets, only those that had tiles placed near them on the last round
+        if(board.hasCalculatedCrossSets()) {
+            board.resetAllCrossSets();
+        }
         List<Move> retVal = new ArrayList<>();
         String letters = "abcdefghijklmnopqrst";
 
         for(String singleLetterRack: letters.split("")) {
 
-            List<Move> moves = _wordSearch(anchorCells, singleLetterRack, initialNode, false);
+            List<Move> moves = _wordSearch(board, singleLetterRack, initialNode, false);
             for(Move m: moves) {
                 for (Move.MoveElement e : m.getMoveElements()) {
 
@@ -34,16 +38,18 @@ public class ScrabbleSolver {
             }
             retVal.addAll(moves);
         }
+        board.setCalculatedCrossSets();
         return retVal;
     }
 
-    public static List<Move> wordSearch(Collection<TileCell> anchorCells, String rackLetters, WordGraph.Node initialNode) {
-        generateCrossSets(anchorCells, initialNode);
-        return _wordSearch(anchorCells,rackLetters, initialNode, true);
+    public static List<Move> wordSearch(WWFClassicBoard board, String rackLetters, WordGraph.Node initialNode) {
+        generateCrossSets(board, initialNode);
+        return _wordSearch(board,rackLetters, initialNode, true);
     }
 
-    static List<Move> _wordSearch(Collection<TileCell> anchorCells, String rackLetters, WordGraph.Node initialNode, boolean crossSetFiltering) {
+    static List<Move> _wordSearch(WWFClassicBoard board, String rackLetters, WordGraph.Node initialNode, boolean crossSetFiltering) {
 
+        Collection<TileCell> anchorCells = board.getAnchorSquares().values();
         rackLetters = rackLetters.toLowerCase();
         List<Move> candidateMoves = new ArrayList<>();
 

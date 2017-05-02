@@ -1,9 +1,20 @@
 package com.curvedpin.solver;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class WWFClassicBoard {
+
+    private boolean calculatedCrossSets = false;
+
+    public boolean hasCalculatedCrossSets() {
+        return calculatedCrossSets;
+    }
+
+    public void setCalculatedCrossSets() {
+        calculatedCrossSets = true;
+    }
 
     public enum Direction {
         UP, DOWN, LEFT, RIGHT;
@@ -107,6 +118,11 @@ public class WWFClassicBoard {
             }
         }
 
+        return retVal;
+    }
+
+    public Map<Integer,String> getTheBoard() {
+        Map<Integer, String> retVal = theBoard.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getLetter()));
         return retVal;
     }
 

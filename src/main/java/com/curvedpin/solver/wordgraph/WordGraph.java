@@ -72,7 +72,7 @@ public class WordGraph {
         public static final String BREAK = "^";
         public static final String EOW = "$";
         public static final String ROOT = " ";
-        private final String letter;
+        final String letter;
         Map<String, Node> children = new HashMap<>();
 
         public Node(String ch) {

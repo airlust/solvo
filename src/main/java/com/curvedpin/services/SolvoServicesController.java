@@ -52,7 +52,7 @@ public class SolvoServicesController {
         Map<Integer, String> rackLetters = BoardImageUtils.getRackLetters(bf);
 
         WWFClassicBoard wordBoard = new WWFClassicBoard(boardLetters);
-        List<Move> moves = ScrabbleSolver.wordSearch(wordBoard.getAnchorSquares().values(), rackLetters.values().stream().collect(Collectors.joining()), wordGraph.getRootNode());
+        List<Move> moves = ScrabbleSolver.wordSearch(wordBoard, rackLetters.values().stream().collect(Collectors.joining()), wordGraph.getRootNode());
         moves.sort(Comparator.<Move>comparingInt(Move::getScore).reversed());
         for(Move m: moves) {
             System.out.println(m);

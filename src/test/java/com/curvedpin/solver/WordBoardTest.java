@@ -126,8 +126,19 @@ public class WordBoardTest {
     public void initateWordSearch() {
         Map<Integer, TileCell> anchorSquares = simpleBoard.getAnchorSquares();
         System.out.println("Testing");
-        ScrabbleSolver.generateCrossSets(anchorSquares.values(), gaddagLoader.getRootNode());
-        List<Move> helpo = ScrabbleSolver.wordSearch(Arrays.asList(new TileCell[]{anchorSquares.get(97)}), "HELPO", gaddagLoader.getRootNode());
+        ScrabbleSolver.generateCrossSets(simpleBoard, gaddagLoader.getRootNode());
+
+        //This board just returns one anchor square so we can narrow down the test.
+        WWFClassicBoard decoratedBoard = new WWFClassicBoard(simpleBoard.getTheBoard()) {
+            @Override
+            public Map<Integer, TileCell> getAnchorSquares() {
+                Map<Integer, TileCell> retVal = new HashMap<>();
+                retVal.put(97,super.getAnchorSquares().get(97));
+                return retVal;
+            }
+        };
+
+        List<Move> helpo = ScrabbleSolver.wordSearch(decoratedBoard, "HELPO", gaddagLoader.getRootNode());
         for (Move m : helpo) {
             System.out.println(m);
         }
@@ -136,9 +147,8 @@ public class WordBoardTest {
 
     @Test
     public void wordSearchWholeBoard() {
-        Map<Integer, TileCell> anchorSquares = simpleBoard.getAnchorSquares();
         //simpleBoard.generateCrossSets(anchorSquares.values(), gaddagLoader.getRootNode());
-        List<Move> moves = ScrabbleSolver.wordSearch(anchorSquares.values(), "HELPO", gaddagLoader.getRootNode());
+        List<Move> moves = ScrabbleSolver.wordSearch(simpleBoard, "HELPO", gaddagLoader.getRootNode());
 
         for(Move m: moves) {
             System.out.println(m);
@@ -148,8 +158,7 @@ public class WordBoardTest {
 
     @Test
     public void testSimpleCrossSets() {
-        Map<Integer, TileCell> anchorSquares = simpleBoard.getAnchorSquares();
-        List<Move> moves = ScrabbleSolver.generateCrossSets(anchorSquares.values(), gaddagLoader.getRootNode());
+        List<Move> moves = ScrabbleSolver.generateCrossSets(simpleBoard, gaddagLoader.getRootNode());
         for(Move m: moves) {
             System.out.println(m);
         }
@@ -157,8 +166,7 @@ public class WordBoardTest {
 
     @Test
     public void testComplexCrossSets() {
-        Map<Integer, TileCell> anchorSquares = anOtherBoard.getAnchorSquares();
-        List<Move> moves = ScrabbleSolver.generateCrossSets(anchorSquares.values(), gaddagLoader.getRootNode());
+        List<Move> moves = ScrabbleSolver.generateCrossSets(anOtherBoard, gaddagLoader.getRootNode());
         for(Move m: moves) {
             if(m.getAnchorTile().getPos() == 58) {System.out.println(m);};
         }
@@ -168,9 +176,8 @@ public class WordBoardTest {
     public void testComplexBoardSingleWordDictionary() {
 
         WordGraph filteredGADDAG = new WordGraph(s -> s.equals("ear"));
-        Map<Integer, TileCell> anchorSquares = anOtherBoard.getAnchorSquares();
-        ScrabbleSolver.generateCrossSets(anchorSquares.values(), gaddagLoader.getRootNode());
-        List<Move> moves = ScrabbleSolver._wordSearch(anchorSquares.values(), "IXREWAJ", filteredGADDAG.getRootNode(),true);
+        ScrabbleSolver.generateCrossSets(anOtherBoard, gaddagLoader.getRootNode());
+        List<Move> moves = ScrabbleSolver._wordSearch(anOtherBoard, "IXREWAJ", filteredGADDAG.getRootNode(),true);
         Assert.assertEquals(moves.get(0).getAnchorTile().getPos(), 161);
         Assert.assertEquals(moves.get(0).getWord(), "ear");
         Assert.assertEquals(moves.size(),1);
@@ -179,8 +186,7 @@ public class WordBoardTest {
     @Test
     public void testComplexBoard() {
 
-        Map<Integer, TileCell> anchorSquares = anOtherBoard.getAnchorSquares();
-        List<Move> moves = ScrabbleSolver.wordSearch(anchorSquares.values(), "IXREWAJ", gaddagLoader.getRootNode());
+        List<Move> moves = ScrabbleSolver.wordSearch(anOtherBoard, "IXREWAJ", gaddagLoader.getRootNode());
 
         moves.sort(Comparator.<Move>comparingInt(Move::getScore).reversed());
         for(Move m: moves)
@@ -198,12 +204,11 @@ public class WordBoardTest {
 
     @Test
     public void testBlankBoardFirstMove() {
-        WWFClassicBoard myBlankBoard = new WWFClassicBoard(new HashMap<>());
-        Map<Integer, TileCell> anchorSquares = myBlankBoard.getAnchorSquares();
+        Map<Integer, TileCell> anchorSquares = blankBoard.getAnchorSquares();
         Assert.assertEquals(1,anchorSquares.size());
         Assert.assertEquals(112,anchorSquares.get(112).getPos());
 
-        List<Move> moves = ScrabbleSolver.wordSearch(anchorSquares.values(), "JOUKER", gaddagLoader.getRootNode());
+        List<Move> moves = ScrabbleSolver.wordSearch(blankBoard, "JOUKER", gaddagLoader.getRootNode());
 
         moves.sort(Comparator.<Move>comparingInt(Move::getScore).reversed());
         for(Move m: moves)
